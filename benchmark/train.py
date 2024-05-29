@@ -1,7 +1,6 @@
 """
 This script handles the training of models base on model configuration files.
 """
-
 import seisbench.generate as sbg
 from seisbench.util import worker_seeding
 
@@ -201,8 +200,17 @@ if __name__ == "__main__":
     parser.add_argument("--lr", default=None, type=float)
     args = parser.parse_args()
 
+
     with open(args.config, "r") as f:
         config = json.load(f)
+
+    # Pop the 'gpus' attribute from 'trainer_args'
+    # None is the default value if the key is not found
+    gpus_value = config['trainer_args'].pop('gpus', None)
+
+    # Add the 'devices' attribute to 'trainer_args' with the popped value
+    if gpus_value is not None:
+        config['trainer_args']['devices'] = gpus_value
 
     experiment_name = os.path.basename(args.config)[:-5]
     if args.lr is not None:
